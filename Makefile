@@ -1,4 +1,4 @@
-prog := RockPaperScissors
+prog := KuhnPoker
 
 all: build run
 

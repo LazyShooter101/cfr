@@ -34,7 +34,7 @@ public:
         std::array<double, NUM_ACTIONS> actionUtility {0};
         for (int i = 0; i < iterations; i++) {
             std::array<double, NUM_ACTIONS> myStrategy = getStrategy(m_regretSum);
-            std::array<double, NUM_ACTIONS> oppStrategy = getStrategy(m_regretSum);
+            std::array<double, NUM_ACTIONS> oppStrategy = getStrategy(m_oppRegretSum);
             int myAction = getAction(myStrategy);
             int oppAction = getAction(oppStrategy);
 
