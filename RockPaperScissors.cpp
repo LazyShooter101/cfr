@@ -9,9 +9,9 @@ public:
     static const int NUM_ACTIONS = 3;
 
     std::array<double, NUM_ACTIONS> m_regretSum {0};
-    std::array<double, NUM_ACTIONS> m_strategy {0};
     std::array<double, NUM_ACTIONS> m_strategySum {0};
-    std::array<double, NUM_ACTIONS> m_oppStrategy {0.4, 0.3, 0.3};
+    std::array<double, NUM_ACTIONS> m_oppRegretSum {0};
+    std::array<double, NUM_ACTIONS> m_oppStrategySum {0};
 
     RockPaperScissorsCFR() {
         std::cout << "Initialising RockPaperScissorsCFR instance\n";
@@ -33,9 +33,10 @@ public:
     void train(int iterations) {
         std::array<double, NUM_ACTIONS> actionUtility {0};
         for (int i = 0; i < iterations; i++) {
-            setMyStrategy();
-            int myAction = getAction(m_strategy);
-            int oppAction = getAction(m_oppStrategy);
+            std::array<double, NUM_ACTIONS> myStrategy = getStrategy(m_regretSum);
+            std::array<double, NUM_ACTIONS> oppStrategy = getStrategy(m_regretSum);
+            int myAction = getAction(myStrategy);
+            int oppAction = getAction(oppStrategy);
 
             actionUtility[oppAction] = 0; // doing the same as opp. has value 0
             switch (oppAction) {
@@ -55,6 +56,28 @@ public:
 
             for (int a=0; a<NUM_ACTIONS; ++a) {
                 m_regretSum[a] += actionUtility[a] - actionUtility[myAction];
+                m_strategySum[a] += myStrategy[a];
+            }
+
+            actionUtility[myAction] = 0; // doing the same as opp. has value 0
+            switch (myAction) {
+                case ROCK:
+                    actionUtility[PAPER] = 1;
+                    actionUtility[SCISSORS] = -1;
+                    break;
+                case PAPER:
+                    actionUtility[SCISSORS] = 1;
+                    actionUtility[ROCK] = -1;
+                    break;
+                case SCISSORS:
+                    actionUtility[ROCK] = 1;
+                    actionUtility[PAPER] = -1;
+                    break;
+            }
+
+            for (int a=0; a<NUM_ACTIONS; ++a) {
+                m_oppRegretSum[a] += actionUtility[a] - actionUtility[oppAction];
+                m_oppStrategySum[a] += oppStrategy[a];
             }
         }
     }
@@ -77,20 +100,21 @@ public:
 
 private:
 
-    void setMyStrategy() {
+    std::array<double, NUM_ACTIONS> getStrategy(std::array<double, NUM_ACTIONS> regretSum) {
         double normalizingSum = 0.0;
+        std::array<double, NUM_ACTIONS> strategy;
         for (int a=0; a<NUM_ACTIONS; ++a) {
-            m_strategy[a] = m_regretSum[a] > 0 ? m_regretSum[a] : 0;
-            normalizingSum += m_strategy[a];
+            strategy[a] = regretSum[a] > 0 ? regretSum[a] : 0;
+            normalizingSum += strategy[a];
         }
         for (int a=0; a<NUM_ACTIONS; ++a) {
             if (normalizingSum > 0) {
-                m_strategy[a] /= normalizingSum;
+                strategy[a] /= normalizingSum;
             } else {
-                m_strategy[a] = 1.0 / NUM_ACTIONS;
+                strategy[a] = 1.0 / NUM_ACTIONS;
             }
-            m_strategySum[a] += m_strategy[a];
         }
+        return strategy;
     }
 };
 
@@ -99,7 +123,7 @@ int main() {
     std::cout << "Starting\n";
 
     RockPaperScissorsCFR cfr_game;
-    cfr_game.train(1000000);
+    cfr_game.train(10000000);
     auto finalStrategy = cfr_game.getAverageStrategy();
     std::cout << "Final Strategy: (";
     for (int a=0; a<finalStrategy.size(); a++) {
