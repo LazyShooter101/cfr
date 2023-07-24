@@ -1,4 +1,4 @@
-prog := KuhnPoker
+prog := KuhnPokerTwoCards
 
 all: build run
 

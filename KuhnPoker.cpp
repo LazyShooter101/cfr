@@ -66,10 +66,10 @@ private:
 // KUHN POKER METHODS:
 public:
     void train(int iterations) {
-        std::array<int, 3> cards {1, 2, 3};
+        std::array<int, 5> cards {1, 2, 3, 4, 5};
         double util = 0.0;
         for (int i=0; i<iterations; i++) {
-            if (i % 10000 == 0) std::cout << "Starting iteration " << i << ":\n";
+            if (i % 100000 == 0) std::cout << "Starting iteration " << i << ":\n";
             // shuffle cards
             std::random_shuffle(cards.begin(), cards.end());
             util += cfr(cards, "", 1.0, 1.0);
@@ -81,7 +81,7 @@ public:
     }
 
 private:
-    double cfr(std::array<int, 3> cards, std::string history, double p0, double p1) {
+    double cfr(std::array<int, 5> cards, std::string history, double p0, double p1) {
         int turnIndex = history.length();
         int player = turnIndex % 2; // player 1 for even turns, player 2 for odd. turns start at 0
         int opponent = 1 - player;
@@ -141,7 +141,7 @@ private:
 
 int main() {
     KuhnPokerCFR trainer = KuhnPokerCFR();
-    trainer.train(1000000);
+    trainer.train(10000000);
 
     return 0;
 }
